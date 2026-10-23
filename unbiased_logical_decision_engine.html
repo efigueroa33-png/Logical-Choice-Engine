@@ -1,0 +1,1431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Unbiased Logical Decision Engine</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Awesome Icons for visual UI elements -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Inter Font -->
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+    /* Custom subtle animations */
+    .fade-in {
+      animation: fadeIn 0.3s ease-in-out forwards;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    /* Canvas styling for Snake game */
+    canvas#snakeCanvas {
+      background-color: #0f172a;
+      border-radius: 0.5rem;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col justify-between selection:bg-slate-800 selection:text-white">
+
+  <!-- Main Container -->
+  <div class="w-full max-w-4xl mx-auto px-4 py-8 flex-grow flex flex-col">
+    
+    <!-- Top Header & Secret Trigger -->
+    <header class="flex items-center justify-between pb-6 mb-8 border-b border-slate-200">
+      <div class="flex items-center space-x-3">
+        <div class="p-2 bg-slate-900 text-white rounded-lg">
+          <i class="fa-solid fa-scale-balanced text-xl"></i>
+        </div>
+        <div>
+          <h1 class="text-xl font-bold text-slate-900 tracking-tight">Logical Choice Engine</h1>
+          <p class="text-xs text-slate-500">Unbiased, objective decision evaluation</p>
+        </div>
+      </div>
+
+      <!-- Secret Snake Easter Egg Trigger -->
+      <button 
+        id="easterEggBtn" 
+        title="Logic Focus Mode" 
+        class="text-slate-300 hover:text-slate-500 transition-colors duration-200 p-2 text-xs focus:outline-none focus:text-slate-600 group flex items-center space-x-1"
+        aria-label="Secret Snake Game Trigger"
+      >
+        <span class="opacity-0 group-hover:opacity-100 text-[10px] uppercase font-mono tracking-wider transition-opacity duration-200">Take a Break</span>
+        <i class="fa-solid fa-asterisk text-sm"></i>
+      </button>
+    </header>
+
+    <!-- Main Content Grid -->
+    <main class="space-y-8 flex-grow">
+
+      <!-- Step 1 & 2 Inputs -->
+      <section class="bg-white rounded-xl p-6 sm:p-8 shadow-sm border border-slate-200/80 space-y-6">
+        <div>
+          <h2 class="text-base font-semibold text-slate-900 uppercase tracking-wide text-xs text-slate-400 mb-4">1. Define Options to Compare</h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            
+            <!-- Option A -->
+            <div class="space-y-2">
+              <label for="optionA" class="block text-sm font-medium text-slate-700">Option A</label>
+              <div class="relative">
+                <input 
+                  type="text" 
+                  id="optionA" 
+                  placeholder="e.g. College" 
+                  class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-800 text-slate-800 text-sm transition"
+                  value="College"
+                >
+              </div>
+            </div>
+
+            <!-- Option B -->
+            <div class="space-y-2">
+              <label for="optionB" class="block text-sm font-medium text-slate-700">Option B</label>
+              <div class="relative">
+                <input 
+                  type="text" 
+                  id="optionB" 
+                  placeholder="e.g. Trade School" 
+                  class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-800 text-slate-800 text-sm transition"
+                  value="Trade School"
+                >
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="pt-4 border-t border-slate-100">
+          <h2 class="text-base font-semibold text-slate-900 uppercase tracking-wide text-xs text-slate-400 mb-2">2. What do you value most?</h2>
+          <p class="text-xs text-slate-500 mb-4">List what matters to you (comma separated or click preset tags below):</p>
+          
+          <textarea 
+            id="prioritiesInput" 
+            rows="3" 
+            placeholder="e.g. Low cost, fast completion, hands-on work, job flexibility, high starting salary"
+            class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:outline-none focus:ring-2 focus:ring-slate-800 text-slate-800 text-sm transition"
+          >Low cost, fast completion, hands-on work, job security</textarea>
+
+          <!-- Quick Tag Presets -->
+          <div class="mt-3">
+            <span class="text-xs font-medium text-slate-400 block mb-2">Quick Add Tags:</span>
+            <div class="flex flex-wrap gap-2" id="presetContainer">
+              <button onclick="addTag('Low Cost')" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-full transition duration-150 border border-slate-200">+ 💰 Low Cost</button>
+              <button onclick="addTag('Fast Completion')" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-full transition duration-150 border border-slate-200">+ ⚡ Fast Completion</button>
+              <button onclick="addTag('Flexibility')" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-full transition duration-150 border border-slate-200">+ 🔄 Flexibility</button>
+              <button onclick="addTag('Job Security')" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-full transition duration-150 border border-slate-200">+ 🛡️ Job Security</button>
+              <button onclick="addTag('Higher Earnings')" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-full transition duration-150 border border-slate-200">+ 📈 High Income</button>
+              <button onclick="addTag('Work-Life Balance')" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-full transition duration-150 border border-slate-200">+ ⚖️ Work-Life Balance</button>
+              <button onclick="addTag('Personal Growth')" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-full transition duration-150 border border-slate-200">+ 🧠 Personal Growth</button>
+              <button onclick="addTag('Location / Commute')" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-full transition duration-150 border border-slate-200">+ 🌍 Location/Commute</button>
+              <button onclick="addTag('Low Stress')" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-full transition duration-150 border border-slate-200">+ 😌 Low Stress</button>
+              <button onclick="addTag('Prestige')" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-full transition duration-150 border border-slate-200">+ 🌟 Prestige</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Button -->
+        <div class="pt-2">
+          <button 
+            id="analyzeBtn" 
+            onclick="runDecisionEngine()" 
+            class="w-full py-4 bg-slate-900 hover:bg-slate-800 text-white font-semibold rounded-lg shadow-sm transition active:scale-[0.99] flex items-center justify-center space-x-2 text-sm"
+          >
+            <span>Analyze & Decide</span>
+            <i class="fa-solid fa-arrow-right text-xs"></i>
+          </button>
+        </div>
+      </section>
+
+      <!-- Output Section (Hidden by default until analyzed) -->
+      <section id="resultsSection" class="hidden space-y-6 fade-in">
+        
+        <!-- Winner Banner -->
+        <div id="winnerCard" class="bg-white rounded-xl p-6 border shadow-sm flex flex-col md:flex-row items-center justify-between gap-4">
+          <div class="space-y-1 text-center md:text-left w-full">
+            <span class="text-xs font-semibold tracking-wider text-slate-400 uppercase">Logical Recommendation</span>
+            <h2 id="winnerText" class="text-2xl font-bold text-slate-900">...</h2>
+            <p id="winnerSummary" class="text-sm text-slate-600">Based on your stated priorities, here is how the choices align.</p>
+            
+            <!-- NEW: List of Reasons UI -->
+            <div id="reasonsContainer" class="hidden mt-4 pt-4 border-t border-slate-100">
+              <h4 class="text-xs font-bold text-slate-700 uppercase mb-2">Primary Reasons for this Result:</h4>
+              <ul id="winnerReasons" class="space-y-2 text-sm text-slate-600 list-disc pl-5">
+                <!-- Dynamically injected reasons -->
+              </ul>
+            </div>
+          </div>
+          <div id="winnerBadge" class="px-4 py-2 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-lg font-semibold text-sm flex items-center space-x-2 shrink-0">
+            <i class="fa-solid fa-circle-check"></i>
+            <span id="winnerBadgeLabel">Logical Winner</span>
+          </div>
+        </div>
+
+        <!-- Cross-Referenced Breakdown Table -->
+        <div class="bg-white rounded-xl border border-slate-200/80 shadow-sm overflow-hidden">
+          <div class="p-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+            <h3 class="font-semibold text-sm text-slate-800">Direct Feature Comparison & Trade-offs</h3>
+            <span class="text-xs text-slate-500">Cross-referenced against your values</span>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+              <thead>
+                <tr class="border-b border-slate-200 bg-slate-50/50 text-xs text-slate-500 uppercase font-semibold">
+                  <th class="py-3 px-4 w-1/4">Stated Requirement</th>
+                  <th class="py-3 px-4 w-3/8 text-slate-900 font-bold" id="thOptA">Option A</th>
+                  <th class="py-3 px-4 w-3/8 text-slate-900 font-bold" id="thOptB">Option B</th>
+                </tr>
+              </thead>
+              <tbody id="comparisonRows" class="divide-y divide-slate-100 text-sm">
+                <!-- Dynamically Generated Rows -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Tie Breaker or Deep Diver Section if needed -->
+        <div id="tieBreakerBox" class="hidden bg-amber-50 border border-amber-200 rounded-xl p-5 text-amber-900 space-y-3">
+          <div class="flex items-center space-x-2 font-semibold">
+            <i class="fa-solid fa-scale-unbalanced text-amber-600"></i>
+            <span>It's a Logical Tie!</span>
+          </div>
+          <p class="text-xs text-amber-800">
+            Both options satisfy an equal number of your priorities. To break the tie, rank which single requirement is your non-negotiable top priority:
+          </p>
+          <div id="tieBreakerOptions" class="flex flex-wrap gap-2 pt-1">
+            <!-- Buttons dynamically added here -->
+          </div>
+        </div>
+
+      </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="mt-12 py-6 text-center text-xs text-slate-400 border-t border-slate-200">
+      Unbiased Logical Decision Tool &bull; Objective Analysis Mode
+    </footer>
+  </div>
+
+  <!-- SECRET SNAKE GAME MODAL -->
+  <div id="snakeModal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-slate-800 text-white rounded-xl shadow-2xl p-6 max-w-3xl w-full border border-slate-700 relative fade-in flex flex-col md:flex-row gap-8">
+      
+      <!-- Close Button -->
+      <button onclick="closeSnakeModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white text-lg z-10">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+
+      <!-- Game Section (Left) -->
+      <div class="flex-1 flex flex-col items-center">
+        <!-- Modal Header -->
+        <div class="mb-4 w-full flex justify-between items-start">
+          <div>
+            <h3 class="text-lg font-bold flex items-center space-x-2">
+              <i class="fa-solid fa-gamepad text-emerald-400"></i>
+              <span>Logic Break: Arcade</span>
+            </h3>
+            <p class="text-xs text-slate-400">Clear your mind while the decision settles.</p>
+          </div>
+          <!-- Game Toggle -->
+          <div class="flex space-x-1 bg-slate-900 rounded p-1">
+            <button id="btnSnake" onclick="toggleGame('snake')" class="bg-emerald-600 text-white text-xs px-3 py-1 rounded transition">Snake</button>
+            <button id="btnBaseball" onclick="toggleGame('baseball')" class="bg-slate-700 text-slate-300 hover:text-white text-xs px-3 py-1 rounded transition">Baseball</button>
+          </div>
+        </div>
+
+        <!-- Scoreboard -->
+        <div class="flex justify-between items-center w-full max-w-[300px] mb-3 text-xs bg-slate-900 px-3 py-2 rounded-md font-mono">
+          <div>SCORE: <span id="snakeScore" class="text-emerald-400 font-bold">0</span></div>
+          <div>LOCAL HIGH: <span id="snakeHighScore" class="text-amber-400 font-bold">0</span></div>
+        </div>
+
+        <!-- Game Canvas & Overlay -->
+        <div class="flex justify-center mb-4 relative w-[300px] h-[300px]">
+          <canvas id="snakeCanvas" width="300" height="300" class="border border-slate-700 absolute top-0 left-0"></canvas>
+          <canvas id="baseballCanvas" width="300" height="300" class="border border-slate-700 absolute top-0 left-0 hidden"></canvas>
+          
+          <!-- Name Entry Overlay for High Score -->
+          <div id="nameEntryUI" class="absolute inset-0 bg-slate-900/95 flex flex-col items-center justify-center hidden rounded-lg p-4 text-center z-10">
+              <span class="text-emerald-400 text-lg font-bold mb-2">Top 10 Global Score!</span>
+              <p class="text-xs text-slate-300 mb-4">Enter your name for the leaderboard:</p>
+              <div class="flex gap-2">
+                  <input type="text" id="playerName" maxlength="10" placeholder="Name" class="px-3 py-2 bg-slate-800 text-white border border-slate-600 rounded text-sm w-32 focus:outline-none focus:border-emerald-400">
+                  <button onclick="submitScore()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded text-sm font-medium transition">Save</button>
+              </div>
+          </div>
+        </div>
+
+        <!-- Controls container -->
+        <div class="w-full max-w-[300px] mb-4 min-h-[80px] flex items-center justify-center">
+            <!-- Touch Controls for Snake -->
+            <div id="snakeControls" class="grid grid-cols-3 gap-2 w-36 mx-auto md:hidden">
+              <div></div>
+              <button onclick="changeDirection('UP')" class="bg-slate-700 active:bg-slate-600 p-2 rounded text-center"><i class="fa-solid fa-arrow-up"></i></button>
+              <div></div>
+              <button onclick="changeDirection('LEFT')" class="bg-slate-700 active:bg-slate-600 p-2 rounded text-center"><i class="fa-solid fa-arrow-left"></i></button>
+              <button onclick="changeDirection('DOWN')" class="bg-slate-700 active:bg-slate-600 p-2 rounded text-center"><i class="fa-solid fa-arrow-down"></i></button>
+              <button onclick="changeDirection('RIGHT')" class="bg-slate-700 active:bg-slate-600 p-2 rounded text-center"><i class="fa-solid fa-arrow-right"></i></button>
+            </div>
+
+            <!-- Touch Controls for Baseball -->
+            <div id="baseballControls" class="hidden w-full text-center">
+                <button onclick="swingBatMouse()" class="w-full py-4 bg-blue-600 active:bg-blue-500 rounded-lg text-white font-bold text-sm shadow-lg active:scale-95 transition-transform tracking-widest">TAP TO SWING</button>
+                <p class="text-[10px] text-slate-400 mt-2">Track ball with cursor/finger, tap to swing.</p>
+            </div>
+        </div>
+
+        <!-- Action Footer -->
+        <div class="flex justify-between items-center w-full max-w-[300px] text-xs text-slate-400">
+          <span id="controlHint">Use arrow keys or WASD to control.</span>
+          <button onclick="restartActiveGame()" class="px-3 py-1 bg-slate-700 hover:bg-slate-600 text-white rounded font-medium transition text-[10px] uppercase tracking-wide">Restart</button>
+        </div>
+      </div>
+
+      <!-- Leaderboard Section (Right) -->
+      <div class="w-full md:w-64 bg-slate-900/50 rounded-lg p-4 border border-slate-700/50 flex flex-col mt-8 md:mt-0">
+        <h4 class="text-sm font-bold text-amber-400 mb-3 flex items-center space-x-2 border-b border-slate-700 pb-2">
+          <i class="fa-solid fa-trophy"></i>
+          <span>Global Leaderboard</span>
+        </h4>
+        
+        <!-- Loading State for Database Connection -->
+        <div id="leaderboardLoading" class="hidden text-center py-6 text-slate-400 text-xs">
+          <i class="fa-solid fa-spinner fa-spin text-emerald-400 text-2xl mb-3"></i>
+          <p>Connecting to database...</p>
+        </div>
+
+        <ul id="leaderboardList" class="space-y-2 flex-1 overflow-y-auto max-h-[300px] pr-2 text-sm font-mono">
+          <!-- Leaderboard items injected here -->
+        </ul>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- JAVASCRIPT ENGINE & EASTER EGG -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInAnonymously, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, doc, collection, onSnapshot, addDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    /* ========================================================
+       FIREBASE INITIALIZATION (Real Leaderboard)
+    ======================================================== */
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+    const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
+    const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+    
+    let user = null;
+    let globalLeaderboard = [];
+
+    async function initAuth() {
+        try {
+            if (initialAuthToken) {
+                await signInWithCustomToken(auth, initialAuthToken);
+            } else {
+                await signInAnonymously(auth);
+            }
+            user = auth.currentUser;
+            setupLeaderboardListener();
+        } catch (error) {
+            console.error("Firebase Auth Error:", error);
+        }
+    }
+    
+    function setupLeaderboardListener() {
+        if (!user) return;
+        const scoresRef = collection(db, 'artifacts', appId, 'public', 'data', 'snakeLeaderboard');
+        
+        onSnapshot(scoresRef, (snapshot) => {
+            let scores = [];
+            snapshot.forEach(doc => {
+                scores.push(doc.data());
+            });
+            // Sort in memory to avoid index requirements
+            scores.sort((a, b) => b.score - a.score);
+            globalLeaderboard = scores.slice(0, 10);
+            renderLeaderboard();
+        }, (error) => {
+            console.error("Leaderboard Error:", error);
+        });
+    }
+
+    initAuth(); // Boot up auth on load
+
+    /* ========================================================
+       PRESET TAG HELPERS
+    ======================================================== */
+    window.addTag = function(tagText) {
+      const input = document.getElementById('prioritiesInput');
+      let currentVal = input.value.trim();
+      if (currentVal.length > 0) {
+        if (!currentVal.toLowerCase().includes(tagText.toLowerCase())) {
+          input.value = currentVal + ", " + tagText;
+        }
+      } else {
+        input.value = tagText;
+      }
+    }
+
+    /* ========================================================
+       GEMINI AI LOGIC ENGINE
+    ======================================================== */
+    window.runDecisionEngine = async function() {
+      const optA = document.getElementById('optionA').value.trim() || "Option A";
+      const optB = document.getElementById('optionB').value.trim() || "Option B";
+      const rawPriorities = document.getElementById('prioritiesInput').value;
+      const btn = document.getElementById('analyzeBtn');
+
+      if (!rawPriorities.trim()) {
+        alert("Please enter at least one value or priority to evaluate.");
+        return;
+      }
+
+      // Set Loading State
+      btn.disabled = true;
+      btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-2"></i> Analyzing Logically...`;
+
+      // Call Gemini API
+      const apiKey = ""; // <--- Add your actual Gemini API Key here for real AI
+      const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-flash-preview:generateContent?key=${apiKey}`;
+
+      // FALLBACK MOCK DATA: If no API key is provided, simulate a response so the app still works!
+      if (!apiKey || apiKey.trim() === "") {
+          console.warn("No API key provided. Using mock data for demonstration.");
+          setTimeout(() => {
+              const mockData = {
+                  winner: "A",
+                  scoreA: 4,
+                  scoreB: 2,
+                  comparisons: [
+                      { priority: "Primary Priority", descA: `${optA} excels in this area.`, descB: `${optB} falls short.`, priorityWinner: "A" },
+                      { priority: "Secondary Requirement", descA: `${optA} meets the criteria.`, descB: `${optB} is slightly better here.`, priorityWinner: "B" },
+                      { priority: "Overall Fit", descA: `${optA} provides a solid foundation.`, descB: `${optB} is less reliable.`, priorityWinner: "A" },
+                      { priority: "Long-Term Value", descA: `${optA} historically scales better over time.`, descB: `${optB} plateaus sooner.`, priorityWinner: "A" },
+                      { priority: "Immediate Satisfaction", descA: `${optA} requires patience initially.`, descB: `${optB} offers immediate gratification.`, priorityWinner: "B" },
+                      { priority: "Risk Factor", descA: `${optA} is a safer, proven route.`, descB: `${optB} carries more uncertainty.`, priorityWinner: "A" }
+                  ],
+                  reasons: [
+                      `${optA} completely dominates in your most critical requirements, ensuring your core needs are met.`,
+                      `While ${optB} has a slight edge in short-term convenience, ${optA} provides a much stronger foundation for the future.`,
+                      `Choosing ${optA} minimizes your overall risk factor based on the priorities you listed.`,
+                      `The trade-offs required for ${optB} do not logically justify the sacrifices you would have to make regarding your long-term goals.`
+                  ]
+              };
+              renderResults(mockData, optA, optB);
+              btn.disabled = false;
+              btn.innerHTML = `<span>Analyze & Decide</span><i class="fa-solid fa-arrow-right text-xs"></i>`;
+          }, 1500);
+          return;
+      }
+
+      const prompt = `Act as an unbiased, highly logical decision engine. 
+      The user is deciding between Option A: "${optA}" and Option B: "${optB}".
+      Their stated priorities are: "${rawPriorities}".
+      
+      Analyze both options against each specific priority. Determine which option best satisfies each priority with cross-referenced pros and cons. Finally, determine the overall winner and provide a bulleted list of specific reasons explaining why that option won based on their priorities.`;
+
+      const payload = {
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: {
+          responseMimeType: "application/json",
+          responseSchema: {
+            type: "OBJECT",
+            properties: {
+              winner: { type: "STRING", description: "'A', 'B', or 'Tie'" },
+              scoreA: { type: "INTEGER" },
+              scoreB: { type: "INTEGER" },
+              comparisons: {
+                type: "ARRAY",
+                items: {
+                  type: "OBJECT",
+                  properties: {
+                    priority: { type: "STRING" },
+                    descA: { type: "STRING", description: "How Option A addresses this" },
+                    descB: { type: "STRING", description: "How Option B addresses this" },
+                    priorityWinner: { type: "STRING", description: "'A' or 'B'" }
+                  }
+                }
+              },
+              reasons: {
+                type: "ARRAY",
+                items: { type: "STRING" },
+                description: "List of reasons explaining why the winning option was chosen."
+              }
+            }
+          }
+        }
+      };
+
+      try {
+        const response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        const result = await response.json();
+        
+        // Check for HTTP errors (like an invalid API key)
+        if (!response.ok) {
+            throw new Error(`API Error: ${result.error?.message || response.statusText}`);
+        }
+
+        if (result.candidates && result.candidates.length > 0 && result.candidates[0].content) {
+          // Clean up potential markdown formatting from the API response
+          let jsonText = result.candidates[0].content.parts[0].text;
+          jsonText = jsonText.replace(/```json/g, '').replace(/```/g, '').trim();
+          
+          const aiData = JSON.parse(jsonText);
+          renderResults(aiData, optA, optB);
+        } else {
+          throw new Error("Invalid response format from AI");
+        }
+      } catch (error) {
+        console.error("API Error", error);
+        alert("There was an error connecting to the logical engine. Please try again.");
+      } finally {
+        // Reset Button
+        btn.disabled = false;
+        btn.innerHTML = `<span>Analyze & Decide</span><i class="fa-solid fa-arrow-right text-xs"></i>`;
+      }
+    }
+
+    function renderResults(aiData, optA, optB) {
+      document.getElementById('thOptA').innerText = optA;
+      document.getElementById('thOptB').innerText = optB;
+
+      const tbody = document.getElementById('comparisonRows');
+      tbody.innerHTML = '';
+
+      // Build Cross-Referenced Matrix
+      if (aiData.comparisons && Array.isArray(aiData.comparisons)) {
+        aiData.comparisons.forEach(comp => {
+          const row = document.createElement('tr');
+          row.className = "hover:bg-slate-50/80 transition";
+          row.innerHTML = `
+            <td class="py-3 px-4 font-medium text-slate-800 capitalize flex items-center space-x-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-slate-400 inline-block mr-2"></span>
+              ${escapeHtml(comp.priority)}
+            </td>
+            <td class="py-3 px-4 ${comp.priorityWinner === 'A' ? 'bg-emerald-50/50 font-medium text-emerald-900' : 'text-slate-600'}">
+              <div class="flex items-start space-x-2">
+                <i class="${comp.priorityWinner === 'A' ? 'fa-solid fa-check text-emerald-600' : 'fa-solid fa-minus text-slate-300'} mt-1 text-xs"></i>
+                <span>${escapeHtml(comp.descA)}</span>
+              </div>
+            </td>
+            <td class="py-3 px-4 ${comp.priorityWinner === 'B' ? 'bg-emerald-50/50 font-medium text-emerald-900' : 'text-slate-600'}">
+              <div class="flex items-start space-x-2">
+                <i class="${comp.priorityWinner === 'B' ? 'fa-solid fa-check text-emerald-600' : 'fa-solid fa-minus text-slate-300'} mt-1 text-xs"></i>
+                <span>${escapeHtml(comp.descB)}</span>
+              </div>
+            </td>
+          `;
+          tbody.appendChild(row);
+        });
+      }
+
+      // Show Results Container
+      const resultsSec = document.getElementById('resultsSection');
+      resultsSec.classList.remove('hidden');
+
+      const winnerText = document.getElementById('winnerText');
+      const winnerSummary = document.getElementById('winnerSummary');
+      const winnerBadge = document.getElementById('winnerBadge');
+      const winnerBadgeLabel = document.getElementById('winnerBadgeLabel');
+      
+      const reasonsContainer = document.getElementById('reasonsContainer');
+      const reasonsList = document.getElementById('winnerReasons');
+      reasonsList.innerHTML = '';
+
+      // Populate Reasons List safely
+      if (aiData.reasons && Array.isArray(aiData.reasons) && aiData.reasons.length > 0) {
+          reasonsContainer.classList.remove('hidden');
+          aiData.reasons.forEach(r => {
+              const li = document.createElement('li');
+              li.innerText = r;
+              reasonsList.appendChild(li);
+          });
+      } else {
+          reasonsContainer.classList.add('hidden');
+      }
+
+      if (aiData.winner === 'A') {
+        winnerText.innerText = `${optA} is the Most Logical Choice`;
+        winnerSummary.innerText = `${optA} aligns best with your priorities (${aiData.scoreA || 0} vs ${aiData.scoreB || 0}).`;
+        winnerBadge.className = "px-4 py-2 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-lg font-semibold text-sm flex items-center space-x-2 shrink-0";
+        winnerBadgeLabel.innerText = "Logical Winner";
+      } else if (aiData.winner === 'B') {
+        winnerText.innerText = `${optB} is the Most Logical Choice`;
+        winnerSummary.innerText = `${optB} aligns best with your priorities (${aiData.scoreB || 0} vs ${aiData.scoreA || 0}).`;
+        winnerBadge.className = "px-4 py-2 bg-emerald-50 text-emerald-700 border border-emerald-200 rounded-lg font-semibold text-sm flex items-center space-x-2 shrink-0";
+        winnerBadgeLabel.innerText = "Logical Winner";
+      } else {
+        winnerText.innerText = `Both Options are Equally Balanced`;
+        winnerSummary.innerText = `Both ${optA} and ${optB} meet an equal number of your priorities.`;
+        winnerBadge.className = "px-4 py-2 bg-amber-50 text-amber-700 border border-amber-200 rounded-lg font-semibold text-sm flex items-center space-x-2 shrink-0";
+        winnerBadgeLabel.innerText = "Perfect Tie";
+      }
+
+      resultsSec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    function escapeHtml(str) {
+      return (str || "").toString().replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+
+    /* ========================================================
+       SECRET SNAKE GAME EASTER EGG (Now with Firebase!)
+    ======================================================== */
+    const easterEggBtn = document.getElementById('easterEggBtn');
+    const snakeModal = document.getElementById('snakeModal');
+    const canvas = document.getElementById('snakeCanvas');
+    const bCanvas = document.getElementById('baseballCanvas');
+    const ctx = canvas.getContext('2d');
+
+    // Mouse & Touch Tracking for Baseball Aiming
+    let mouseX = 150;
+    let mouseY = 210;
+
+    function updateMousePos(e) {
+        if (activeGame !== 'baseball') return;
+        const rect = bCanvas.getBoundingClientRect();
+        let clientX = e.clientX;
+        let clientY = e.clientY;
+        if (e.touches && e.touches.length > 0) {
+            clientX = e.touches[0].clientX;
+            clientY = e.touches[0].clientY;
+        }
+        mouseX = (clientX - rect.left) * (bCanvas.width / rect.width);
+        mouseY = (clientY - rect.top) * (bCanvas.height / rect.height);
+    }
+    
+    bCanvas.addEventListener('mousemove', updateMousePos);
+    bCanvas.addEventListener('touchmove', (e) => { updateMousePos(e); e.preventDefault(); }, {passive: false});
+    bCanvas.addEventListener('mousedown', () => window.swingBatMouse());
+
+    let activeGame = 'snake';
+    let baseballInterval = null;
+
+    let snake = [];
+    let food = {};
+    let direction = 'RIGHT';
+    let nextDirection = 'RIGHT';
+    let gameLoopInterval = null;
+    let score = 0;
+    let highScore = 0;
+    const gridSize = 15; 
+
+    easterEggBtn.addEventListener('click', () => {
+      snakeModal.classList.remove('hidden');
+      renderLeaderboard();
+      window.toggleGame('snake'); // Default to snake
+    });
+
+    window.closeSnakeModal = function() {
+      snakeModal.classList.add('hidden');
+      if (gameLoopInterval) clearInterval(gameLoopInterval);
+      if (baseballInterval) clearInterval(baseballInterval);
+      document.getElementById('nameEntryUI').classList.add('hidden');
+    }
+
+    window.toggleGame = function(game) {
+        activeGame = game;
+        document.getElementById('snakeCanvas').classList.toggle('hidden', game !== 'snake');
+        document.getElementById('baseballCanvas').classList.toggle('hidden', game !== 'baseball');
+        document.getElementById('snakeControls').classList.toggle('hidden', game !== 'snake');
+        document.getElementById('baseballControls').classList.toggle('hidden', game !== 'baseball');
+        
+        document.getElementById('btnSnake').classList.toggle('bg-emerald-600', game === 'snake');
+        document.getElementById('btnSnake').classList.toggle('bg-slate-700', game !== 'snake');
+        document.getElementById('btnSnake').classList.toggle('text-white', game === 'snake');
+        document.getElementById('btnSnake').classList.toggle('text-slate-300', game !== 'snake');
+        
+        document.getElementById('btnBaseball').classList.toggle('bg-blue-600', game === 'baseball');
+        document.getElementById('btnBaseball').classList.toggle('bg-slate-700', game !== 'baseball');
+        document.getElementById('btnBaseball').classList.toggle('text-white', game === 'baseball');
+        document.getElementById('btnBaseball').classList.toggle('text-slate-300', game !== 'baseball');
+
+        document.getElementById('controlHint').innerText = game === 'snake' ? 'Use arrow keys or WASD.' : 'Track with cursor, Click/Space to swing.';
+        document.getElementById('nameEntryUI').classList.add('hidden');
+
+        restartActiveGame();
+    }
+
+    window.restartActiveGame = function() {
+        if (activeGame === 'snake') {
+            if (baseballInterval) clearInterval(baseballInterval);
+            window.initSnakeGame();
+        } else {
+            if (gameLoopInterval) clearInterval(gameLoopInterval);
+            window.initBaseballGame();
+        }
+    }
+
+    function renderLeaderboard() {
+      const list = document.getElementById('leaderboardList');
+      const loader = document.getElementById('leaderboardLoading');
+      
+      loader.classList.add('hidden');
+      list.innerHTML = '';
+      
+      if (globalLeaderboard.length === 0) {
+        list.innerHTML = '<li class="text-xs text-slate-500 text-center py-4">Be the first to set a high score!</li>';
+        return;
+      }
+
+      globalLeaderboard.forEach((entry, index) => {
+        const li = document.createElement('li');
+        li.className = "flex justify-between items-center p-2 rounded bg-slate-800/80 border border-slate-700/50";
+        
+        let rankColor = "text-slate-400";
+        if (index === 0) rankColor = "text-yellow-400 font-bold";
+        else if (index === 1) rankColor = "text-slate-300 font-bold";
+        else if (index === 2) rankColor = "text-amber-600 font-bold";
+
+        li.innerHTML = `
+          <div class="flex items-center space-x-3">
+            <span class="${rankColor} w-4 text-xs">#${index + 1}</span>
+            <span class="text-white truncate max-w-[90px]">${escapeHtml(entry.name)}</span>
+          </div>
+          <span class="text-emerald-400">${entry.score}</span>
+        `;
+        list.appendChild(li);
+      });
+    }
+
+    window.initSnakeGame = function() {
+      if (gameLoopInterval) clearInterval(gameLoopInterval);
+      document.getElementById('nameEntryUI').classList.add('hidden');
+      snake = [
+        { x: 5 * gridSize, y: 10 * gridSize },
+        { x: 4 * gridSize, y: 10 * gridSize },
+        { x: 3 * gridSize, y: 10 * gridSize }
+      ];
+      direction = 'RIGHT';
+      nextDirection = 'RIGHT';
+      score = 0;
+      document.getElementById('snakeScore').innerText = score;
+      spawnFood();
+      gameLoopInterval = setInterval(gameStep, 100);
+    }
+
+    function spawnFood() {
+      food = {
+        x: Math.floor(Math.random() * (canvas.width / gridSize)) * gridSize,
+        y: Math.floor(Math.random() * (canvas.height / gridSize)) * gridSize
+      };
+    }
+
+    window.changeDirection = function(newDir) {
+      if (newDir === 'LEFT' && direction !== 'RIGHT') nextDirection = 'LEFT';
+      if (newDir === 'UP' && direction !== 'DOWN') nextDirection = 'UP';
+      if (newDir === 'RIGHT' && direction !== 'LEFT') nextDirection = 'RIGHT';
+      if (newDir === 'DOWN' && direction !== 'UP') nextDirection = 'DOWN';
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (snakeModal.classList.contains('hidden')) return;
+      const key = e.key.toLowerCase();
+      
+      if (activeGame === 'baseball') {
+          if (e.key === ' ') { e.preventDefault(); window.swingBatMouse(); return; }
+      }
+      
+      if (e.key === 'ArrowLeft' || key === 'a') window.changeDirection('LEFT');
+      if (e.key === 'ArrowUp' || key === 'w') window.changeDirection('UP');
+      if (e.key === 'ArrowRight' || key === 'd') window.changeDirection('RIGHT');
+      if (e.key === 'ArrowDown' || key === 's') window.changeDirection('DOWN');
+    });
+
+    function gameStep() {
+      direction = nextDirection;
+      const head = { x: snake[0].x, y: snake[0].y };
+
+      if (direction === 'RIGHT') head.x += gridSize;
+      if (direction === 'LEFT') head.x -= gridSize;
+      if (direction === 'UP') head.y -= gridSize;
+      if (direction === 'DOWN') head.y += gridSize;
+
+      if (head.x < 0 || head.x >= canvas.width || head.y < 0 || head.y >= canvas.height) {
+        gameOver(); return;
+      }
+      for (let i = 0; i < snake.length; i++) {
+        if (head.x === snake[i].x && head.y === snake[i].y) {
+          gameOver(); return;
+        }
+      }
+
+      snake.unshift(head);
+      if (head.x === food.x && head.y === food.y) {
+        score += 10;
+        document.getElementById('snakeScore').innerText = score;
+        if (score > highScore) {
+          highScore = score;
+          document.getElementById('snakeHighScore').innerText = highScore;
+        }
+        spawnFood();
+      } else {
+        snake.pop();
+      }
+      drawGame();
+    }
+
+    function drawGame() {
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#10b981'; 
+      ctx.fillRect(food.x + 1, food.y + 1, gridSize - 2, gridSize - 2);
+      snake.forEach((segment, index) => {
+        ctx.fillStyle = index === 0 ? '#38bdf8' : '#94a3b8';
+        ctx.fillRect(segment.x + 1, segment.y + 1, gridSize - 2, gridSize - 2);
+      });
+    }
+
+    function gameOver() {
+      clearInterval(gameLoopInterval);
+      ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 16px Inter, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('GAME OVER', canvas.width / 2, canvas.height / 2 - 15);
+      ctx.font = '12px Inter, sans-serif';
+      ctx.fillStyle = '#94a3b8';
+      ctx.fillText(`Score: ${score}`, canvas.width / 2, canvas.height / 2 + 10);
+
+      const lowestTop10Score = globalLeaderboard.length >= 10 ? globalLeaderboard[9].score : 0;
+      if (score > lowestTop10Score && score > 0) {
+        document.getElementById('nameEntryUI').classList.remove('hidden');
+        document.getElementById('playerName').focus();
+      }
+    }
+
+    /* --- BASEBALL GAME LOGIC (3rd Person Perspective) --- */
+    let bScore = 0;
+    let bStrikes = 0;
+    let bOuts = 0;
+    let batterNames = ["Pablo Sanchez", "S. Slugger", "B. Ruth", "K. Griffey", "M. Trout", "S. Ohtani", "A. Judge", "D. Jeter", "I. Suzuki"];
+    let currentBatterIndex = 0;
+    let currentBatterName = "";
+    let bGameState = 'PITCHING'; // PITCHING, BALL_IN_PLAY
+    let ball = { x: 150, y: 110, z: 10, speedZ: 0, lastHitPoints: 0, active: false, speedX: 0, speedY: 5, radius: 6, targetZone: 'CENTER', hitProcessed: false };
+    let outfielders = [];
+    let swingFrames = 0;
+    let bStatusText = "";
+    let bStatusSub = "";
+    let hitAnimation = 0;
+    let batterRunner = { active: false, x: 190, y: 242, scale: 1 };
+    let runnersOnBase = [false, false, false]; // 1st, 2nd, 3rd base
+    let homeRunRunners = []; // Tracks runners trotting during a HR
+    let pendingHit = null; // Tracks hits before advancing runners
+
+    window.initBaseballGame = function() {
+        if (baseballInterval) clearInterval(baseballInterval);
+        bScore = 0;
+        bStrikes = 0;
+        bOuts = 0;
+        runnersOnBase = [false, false, false];
+        pendingHit = null;
+        currentBatterIndex = 0;
+        currentBatterName = batterNames[currentBatterIndex];
+        bStatusText = "PLAY BALL!";
+        bStatusSub = "";
+        score = 0; 
+        document.getElementById('snakeScore').innerText = score;
+        resetPitch();
+        baseballInterval = setInterval(baseballStep, 30);
+    }
+
+    function nextBatterAndPitch() {
+        if (pendingHit === 'single') {
+            runnersOnBase[2] = runnersOnBase[1];
+            runnersOnBase[1] = runnersOnBase[0];
+            runnersOnBase[0] = true;
+        } else if (pendingHit === 'homerun') {
+            runnersOnBase = [false, false, false];
+        }
+        pendingHit = null;
+
+        bStrikes = 0;
+        currentBatterIndex = (currentBatterIndex + 1) % batterNames.length;
+        currentBatterName = batterNames[currentBatterIndex];
+        resetPitch();
+    }
+
+    function resetPitch() {
+        bGameState = 'PITCHING';
+        
+        // Outfielders in the distance
+        outfielders = [
+            { x: 70, y: 120 }, // Left field
+            { x: 150, y: 115 }, // Center field
+            { x: 230, y: 120 } // Right field
+        ];
+
+        ball.x = 150;
+        ball.y = 105; // Pitcher mound height
+        ball.z = 25; // Release height
+        ball.speedZ = -0.3; // Slight drop on pitch
+        ball.hitProcessed = false;
+        
+        // Randomize pitch location so player has to track it
+        let targetX = 110 + (Math.random() * 80); // Random spot between 110 and 190
+        
+        ball.speedY = 4 + Math.random() * 2.5; // Pitch speed
+        const timeToPlate = (250 - 105) / ball.speedY; 
+        ball.speedX = (targetX - 150) / timeToPlate; // Angle pitch to cross strike zone
+        
+        hitAnimation = 0;
+        ball.active = false;
+        batterRunner = { active: false, x: 190, y: 242, scale: 1 };
+        homeRunRunners = [];
+        
+        setTimeout(() => {
+            if (activeGame === 'baseball' && bStrikes < 3 && bOuts < 3) {
+                ball.active = true;
+                bStatusText = "";
+                bStatusSub = "";
+            }
+        }, 1200);
+    }
+
+    window.swingBatMouse = function() {
+        if (activeGame !== 'baseball' || bGameState !== 'PITCHING' || !ball.active || swingFrames > 0) return;
+        swingFrames = 15; 
+        
+        let scale = 0.4 + (ball.y / 300) * 1.6;
+        let screenBallX = ball.x;
+        let screenBallY = ball.y - (ball.z * scale);
+        
+        // Plate is around y=270. Strike zone sweet spot is around y=240 to 260
+        let distY = Math.abs(ball.y - 250); 
+        let distCursor = Math.hypot(mouseX - screenBallX, mouseY - screenBallY);
+        
+        if (distY < 30) { // Good timing
+            if (distCursor < 35) { // Good aim (Cursor is close to the ball)
+                bGameState = 'BALL_IN_PLAY';
+                hitAnimation = 10;
+                batterRunner.active = true;
+                
+                let powerY = (35 - distCursor) / 35; // 0 to 1
+                let powerTiming = (30 - distY) / 30; // 0 to 1
+                let combinedPower = (powerY + powerTiming) / 2; // 0 to 1
+                
+                let hitAngle = (screenBallX - 150) * 0.05 + ((mouseX - screenBallX) * 0.08); 
+                ball.speedX = hitAngle;
+                
+                // --- PERFECT HIT LOGIC (HOME RUNS) ---
+                if (distCursor < 8 && distY < 12) {
+                    // Perfect aim and timing! Massive launch angle and speed.
+                    ball.speedY = -(7 + combinedPower * 4); 
+                    ball.speedZ = 14 + (combinedPower * 4); 
+                    bStatusText = "PERFECT CONTACT!";
+                    bStatusSub = "It's going deep!!";
+                } else {
+                    // Normal hit! Lower launch angle (Grounders and Line Drives)
+                    ball.speedY = -(4.5 + combinedPower * 3); 
+                    ball.speedZ = (combinedPower * 6.5) + (ball.y < 250 ? 2 : -2); // Maxes out too low to clear the wall
+                    bStatusText = "HIT!";
+                    bStatusSub = "Tracking...";
+                }
+            } else {
+                bStatusText = "MISS!";
+                bStatusSub = "Bad Aim!";
+            }
+        } else {
+            bStatusText = "WHIFF!";
+            bStatusSub = ball.y < 250 ? "Too Early!" : "Too Late!";
+        }
+    }
+
+    function baseballStep() {
+        const bCtx = document.getElementById('baseballCanvas').getContext('2d');
+        
+        if (ball.active) {
+            ball.x += ball.speedX;
+            ball.y += ball.speedY;
+            ball.z += ball.speedZ;
+            
+            if (bGameState === 'BALL_IN_PLAY') {
+                // Gravity & Bouncing for hit ball
+                ball.speedZ -= 0.5; 
+                
+                // Check if ball goes over the wall
+                if (ball.y < 100 && !ball.hitProcessed) {
+                    if (ball.z > 10) {
+                        ball.hitProcessed = true;
+                        bGameState = 'HOME_RUN_TROT';
+                        let runs = 1 + (runnersOnBase[0]?1:0) + (runnersOnBase[1]?1:0) + (runnersOnBase[2]?1:0);
+                        let hrScore = runs * 20;
+                        bScore += hrScore;
+                        bStatusText = runs === 4 ? "GRAND SLAM!!" : "HOME RUN!!";
+                        bStatusSub = `+${hrScore} POINTS (${runs} RUNS!)`;
+                        pendingHit = 'homerun';
+                        
+                        // Setup Home Run Trot Animation
+                        homeRunRunners = [];
+                        if (runnersOnBase[2]) homeRunRunners.push({x: 65, y: 155, scale: 0.35, target: 4}); // 3rd base
+                        if (runnersOnBase[1]) homeRunRunners.push({x: 146, y: 110, scale: 0.25, target: 3}); // 2nd base
+                        if (runnersOnBase[0]) homeRunRunners.push({x: 235, y: 155, scale: 0.35, target: 2}); // 1st base
+                        if (batterRunner.active) homeRunRunners.push({x: batterRunner.x, y: batterRunner.y, scale: batterRunner.scale, target: 1}); // Batter
+                        
+                        runnersOnBase = [false, false, false]; // Hide stationary runners
+                        batterRunner.active = false;
+                        
+                        score = bScore;
+                        document.getElementById('snakeScore').innerText = score;
+                        if (score > highScore) {
+                            highScore = score;
+                            document.getElementById('snakeHighScore').innerText = highScore;
+                        }
+                        
+                        setTimeout(nextBatterAndPitch, 5500); // Give them time to trot
+                    } else {
+                        // Hits the wall and stays in play
+                        ball.speedY = Math.abs(ball.speedY) * 0.3;
+                        ball.y = 100;
+                    }
+                }
+
+                if (ball.z <= 0) {
+                    ball.z = 0;
+                    if (Math.abs(ball.speedZ) > 2) {
+                        ball.speedZ = -ball.speedZ * 0.4; // Bounce
+                    } else {
+                        ball.speedZ = 0;
+                    }
+                    ball.speedX *= 0.9; 
+                    ball.speedY *= 0.9;
+                    
+                    if (!ball.hitProcessed && ball.y > 100) {
+                        ball.hitProcessed = true;
+                        let runs = runnersOnBase[2] ? 1 : 0;
+                        let hitScore = 5 + (runs * 10);
+                        bScore += hitScore;
+                        bStatusText = "BASE HIT!";
+                        bStatusSub = runs > 0 ? `RBI Single! (+15)` : `Solid Contact! (+5)`;
+                        pendingHit = 'single';
+                        
+                        score = bScore;
+                        document.getElementById('snakeScore').innerText = score;
+                        if (score > highScore) {
+                            highScore = score;
+                            document.getElementById('snakeHighScore').innerText = highScore;
+                        }
+                        
+                        setTimeout(nextBatterAndPitch, 2000);
+                    }
+                }
+            }
+            
+            // Strikeout check (ball goes past camera)
+            if (bGameState === 'PITCHING' && ball.y > 280) {
+                ball.active = false;
+                bStrikes++;
+                if (bStrikes >= 3) {
+                    bOuts++;
+                    if (bOuts >= 3) {
+                        bStatusText = "STRIKEOUT!";
+                        bStatusSub = "3 OUTS - GAME OVER";
+                        setTimeout(gameOverBaseball, 1000);
+                        return;
+                    } else {
+                        bStatusText = "STRIKEOUT!";
+                        bStatusSub = "Next batter up...";
+                        setTimeout(nextBatterAndPitch, 1500);
+                    }
+                } else {
+                    bStatusText = `STRIKE ${bStrikes}!`;
+                    setTimeout(resetPitch, 1200);
+                }
+            }
+        }
+        
+        if (bGameState === 'BALL_IN_PLAY') {
+            // Outfielders chase the ball
+            outfielders.forEach(of => {
+                let dx = ball.x - of.x;
+                let dy = ball.y - of.y;
+                let dist = Math.sqrt(dx*dx + dy*dy);
+                
+                if (ball.active && !ball.hitProcessed) {
+                    if (dist > 3) {
+                        of.x += (dx/dist) * 2.2; 
+                        of.y += (dy/dist) * 2.2;
+                    }
+                    
+                    // Prevent outfielders from running through the stadium wall!
+                    if (of.y < 105) of.y = 105;
+                    
+                    // Catch logic (must catch in outfield, not infield, and ball can't be too high)
+                    if (dist < 12 && ball.z < 35 && ball.y < 200 && bGameState === 'BALL_IN_PLAY') {
+                        ball.hitProcessed = true;
+                        ball.active = false; 
+                        pendingHit = null; // Runner doesn't advance
+                        
+                        bOuts++;
+                        bStatusText = ball.z > 5 ? "FLY OUT!" : "GROUND OUT!";
+                        
+                        if (bOuts >= 3) {
+                            bStatusSub = "3 OUTS - GAME OVER";
+                            setTimeout(gameOverBaseball, 1500);
+                        } else {
+                            bStatusSub = "Caught! Next batter...";
+                            setTimeout(nextBatterAndPitch, 2000);
+                        }
+                    }
+                }
+            });
+        }
+        
+        if (swingFrames > 0) swingFrames--;
+        if (hitAnimation > 0) hitAnimation--;
+
+        // Animate batter running to 1st base
+        if (bGameState === 'BALL_IN_PLAY' && batterRunner.active) {
+            batterRunner.x += (230 - batterRunner.x) * 0.06; // Move towards X of 1st Base
+            batterRunner.y += (160 - batterRunner.y) * 0.06; // Move towards Y of 1st Base
+            batterRunner.scale = Math.max(0.35, batterRunner.scale - 0.02); // Shrink as he runs away
+        }
+
+        // Animate Home Run Trot
+        if (bGameState === 'HOME_RUN_TROT') {
+            const baseCoords = [
+                {x: 150, y: 270, s: 1.0}, // 0: Home Plate (start)
+                {x: 235, y: 155, s: 0.35}, // 1: 1st Base
+                {x: 146, y: 110, s: 0.25}, // 2: 2nd Base
+                {x: 65, y: 155, s: 0.35},  // 3: 3rd Base
+                {x: 150, y: 270, s: 1.0}   // 4: Home Plate (end)
+            ];
+            homeRunRunners.forEach(r => {
+                if (r.target > 4) return;
+                let dest = baseCoords[r.target];
+                let dx = dest.x - r.x;
+                let dy = dest.y - r.y;
+                let dist = Math.sqrt(dx*dx + dy*dy);
+                if (dist < 5) {
+                    r.target++;
+                } else {
+                    let speed = 2.5; 
+                    r.x += (dx/dist) * speed;
+                    r.y += (dy/dist) * speed;
+                    r.scale += (dest.s - r.scale) * 0.1;
+                    r.bounce = Math.sin(Date.now() / 60) * 4 * r.scale; // Running bounce
+                }
+            });
+        }
+
+        // ================= DRAWING PHASE ================= //
+
+        // 1. Sky, Stadium & Outfield Wall
+        bCtx.fillStyle = '#38bdf8'; // Sky
+        bCtx.fillRect(0, 0, 300, 100);
+        
+        // Stadium Lights
+        bCtx.fillStyle = '#94a3b8'; // Poles
+        bCtx.fillRect(38, 20, 4, 40);
+        bCtx.fillRect(258, 20, 4, 40);
+        bCtx.fillStyle = '#cbd5e1'; // Light banks
+        bCtx.fillRect(25, 10, 30, 15);
+        bCtx.fillRect(245, 10, 30, 15);
+        bCtx.fillStyle = '#ffffff'; // Bulbs
+        for(let i=0; i<3; i++) {
+            for(let j=0; j<2; j++) {
+                bCtx.fillRect(27 + i*9, 12 + j*6, 5, 4);
+                bCtx.fillRect(247 + i*9, 12 + j*6, 5, 4);
+            }
+        }
+
+        // Grandstands (Bleachers)
+        bCtx.fillStyle = '#475569'; 
+        bCtx.fillRect(0, 50, 300, 40);
+        bCtx.fillStyle = '#334155'; // Seats detail
+        bCtx.fillRect(0, 60, 300, 4);
+        bCtx.fillRect(0, 72, 300, 4);
+        bCtx.fillRect(0, 84, 300, 4);
+
+        // Scoreboard in Center Field
+        bCtx.fillStyle = '#0f172a';
+        bCtx.fillRect(110, 35, 80, 35);
+        bCtx.strokeStyle = '#ffffff'; bCtx.lineWidth = 1; bCtx.strokeRect(110, 35, 80, 35);
+        bCtx.fillStyle = '#22c55e'; bCtx.font = '10px font-mono'; bCtx.textAlign = 'center';
+        bCtx.fillText('SCORE', 150, 50); 
+        bCtx.fillStyle = '#ef4444'; 
+        bCtx.fillText(bScore.toString(), 150, 65);
+
+        // Outfield Wall
+        bCtx.fillStyle = '#1e3a8a'; 
+        bCtx.fillRect(0, 90, 300, 15);
+        bCtx.fillStyle = '#facc15'; // Yellow home run line
+        bCtx.fillRect(0, 90, 300, 2);
+
+        // 2. Field Grass
+        bCtx.fillStyle = '#22c55e'; 
+        bCtx.fillRect(0, 105, 300, 195);
+        
+        // 3. Dirt Infield (3D Perspective Trapezoid)
+        bCtx.fillStyle = '#b45309'; 
+        bCtx.beginPath();
+        bCtx.moveTo(150, 100);  // Back of mound
+        bCtx.lineTo(260, 150);  // 1st base side
+        bCtx.lineTo(300, 300);  // Bottom right screen edge
+        bCtx.lineTo(0, 300);    // Bottom left screen edge
+        bCtx.lineTo(40, 150);   // 3rd base side
+        bCtx.fill();
+        
+        // 4. Bases (Perspective drawn)
+        bCtx.fillStyle = '#ffffff';
+        bCtx.fillRect(146, 115, 8, 3); // 2nd Base
+        
+        bCtx.beginPath(); // 1st Base
+        bCtx.moveTo(230, 160); bCtx.lineTo(240, 162); bCtx.lineTo(235, 168); bCtx.lineTo(225, 166); bCtx.fill();
+        
+        bCtx.beginPath(); // 3rd Base
+        bCtx.moveTo(70, 160); bCtx.lineTo(60, 162); bCtx.lineTo(65, 168); bCtx.lineTo(75, 166); bCtx.fill();
+
+        // 4.5 Base Runners (Stationary during pitch)
+        const drawRunner = (bx, by, bScale) => {
+            bCtx.fillStyle = '#facc15'; 
+            bCtx.beginPath(); bCtx.ellipse(bx, by, 15 * bScale, 23 * bScale, 0, 0, Math.PI*2); bCtx.fill(); 
+            bCtx.fillStyle = '#b45309'; 
+            bCtx.beginPath(); bCtx.arc(bx, by - (27 * bScale), 12 * bScale, 0, Math.PI*2); bCtx.fill(); 
+            bCtx.fillStyle = '#1d4ed8';
+            bCtx.beginPath(); bCtx.arc(bx, by - (29 * bScale), 12 * bScale, Math.PI, Math.PI*2); bCtx.fill();
+        };
+        if (runnersOnBase[0]) drawRunner(235, 155, 0.35); // 1st Base
+        if (runnersOnBase[1]) drawRunner(146, 110, 0.25); // 2nd Base
+        if (runnersOnBase[2]) drawRunner(65, 155, 0.35);  // 3rd Base
+
+        // Draw Trotting Runners (During HR)
+        homeRunRunners.forEach(r => {
+            if (r.target <= 4) drawRunner(r.x, r.y + (r.bounce || 0), r.scale);
+        });
+
+        // 5. Home Plate & Batters Boxes
+        bCtx.beginPath(); 
+        bCtx.moveTo(140, 270); bCtx.lineTo(160, 270); bCtx.lineTo(160, 278); bCtx.lineTo(150, 285); bCtx.lineTo(140, 278); 
+        bCtx.fill();
+        
+        bCtx.strokeStyle = 'rgba(255,255,255,0.4)'; bCtx.lineWidth = 2;
+        bCtx.strokeRect(95, 255, 35, 45); // Left box
+        bCtx.strokeRect(170, 255, 35, 45); // Right box
+
+        // 6. Outfielders
+        outfielders.forEach(of => {
+            bCtx.fillStyle = '#ef4444'; // Red jerseys
+            bCtx.beginPath(); bCtx.arc(of.x, of.y, 5, 0, Math.PI*2); bCtx.fill();
+            bCtx.fillStyle = '#1e293b'; // Hat
+            bCtx.beginPath(); bCtx.arc(of.x, of.y - 4, 3.5, 0, Math.PI*2); bCtx.fill();
+        });
+
+        // 7. Pitcher
+        bCtx.fillStyle = '#eab308'; // Yellow jersey
+        bCtx.beginPath(); bCtx.arc(150, 103, 6, 0, Math.PI*2); bCtx.fill();
+        bCtx.fillStyle = '#334155'; // Hat
+        bCtx.beginPath(); bCtx.arc(150, 97, 4.5, 0, Math.PI*2); bCtx.fill();
+
+        // 8. Strike Zone UI & Reticle
+        if (bGameState === 'PITCHING') {
+            bCtx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+            bCtx.lineWidth = 2;
+            bCtx.strokeRect(115, 180, 70, 60); // Full box
+            
+            // Draw Reticle (Crosshair)
+            bCtx.strokeStyle = 'rgba(255, 255, 255, 0.9)';
+            bCtx.lineWidth = 1.5;
+            bCtx.beginPath();
+            bCtx.arc(mouseX, mouseY, 8, 0, Math.PI*2);
+            bCtx.moveTo(mouseX - 12, mouseY); bCtx.lineTo(mouseX - 4, mouseY);
+            bCtx.moveTo(mouseX + 12, mouseY); bCtx.lineTo(mouseX + 4, mouseY);
+            bCtx.moveTo(mouseX, mouseY - 12); bCtx.lineTo(mouseX, mouseY - 4);
+            bCtx.moveTo(mouseX, mouseY + 12); bCtx.lineTo(mouseX, mouseY + 4);
+            bCtx.stroke();
+            
+            // Swing Flash Feedback
+            if (swingFrames > 10) {
+                bCtx.fillStyle = 'rgba(239, 68, 68, 0.5)';
+                bCtx.beginPath(); bCtx.arc(mouseX, mouseY, 15, 0, Math.PI*2); bCtx.fill();
+            }
+        }
+
+        // 9. Batter (Foreground 3rd Person & Running Animation)
+        let bx = 190, by = 242, bScale = 1;
+        if (batterRunner.active) {
+            bx = batterRunner.x;
+            by = batterRunner.y;
+            bScale = batterRunner.scale;
+            // Add a little bounce to simulate running steps
+            by += Math.sin(Date.now() / 60) * 4 * bScale; 
+        }
+
+        // Body (Yellow jersey)
+        bCtx.fillStyle = (swingFrames > 0 && !batterRunner.active) ? '#ca8a04' : '#facc15'; 
+        bCtx.beginPath(); bCtx.ellipse(bx, by, 15 * bScale, 23 * bScale, 0, 0, Math.PI*2); bCtx.fill(); 
+        
+        // Head (Tan skin)
+        bCtx.fillStyle = '#b45309'; 
+        bCtx.beginPath(); bCtx.arc(bx, by - (27 * bScale), 12 * bScale, 0, Math.PI*2); bCtx.fill(); 
+        
+        // Backward Cap (Blue)
+        bCtx.fillStyle = '#1d4ed8';
+        bCtx.beginPath(); bCtx.arc(bx, by - (29 * bScale), 12 * bScale, Math.PI, Math.PI*2); bCtx.fill(); // Cap dome
+        bCtx.fillRect(bx + (5 * bScale), by - (29 * bScale), 10 * bScale, 4 * bScale); // Bill pointing backward
+
+        // 10. Bat (Only draw if not running - he drops it when hit!)
+        if (bGameState === 'PITCHING' && !batterRunner.active) {
+            bCtx.strokeStyle = '#cbd5e1'; // Silver bat
+            bCtx.lineWidth = 5;
+            bCtx.lineCap = 'round';
+            bCtx.beginPath();
+            if (swingFrames > 0) {
+                bCtx.moveTo(180, 240);
+                bCtx.lineTo(110, 235); // Swung through the zone
+            } else {
+                bCtx.moveTo(180, 240);
+                bCtx.lineTo(195, 185); // Held up and back
+            }
+            bCtx.stroke();
+        }
+
+        // 11. Ball (Scaling 3D effect)
+        if (ball.active) {
+            // Scale goes from ~0.4 at pitcher to ~1.6 at home plate
+            let scale = 0.4 + (ball.y / 300) * 1.6;
+            let drawRad = Math.max(1.5, ball.radius * scale);
+            let drawY = ball.y - (ball.z * scale);
+            
+            // Shadow
+            if (ball.z > 0 && ball.y < 300) {
+                bCtx.fillStyle = 'rgba(0,0,0,0.3)';
+                bCtx.beginPath(); bCtx.ellipse(ball.x, ball.y, drawRad, drawRad/2, 0, 0, Math.PI*2); bCtx.fill();
+            }
+            
+            // White Ball
+            bCtx.fillStyle = '#ffffff';
+            bCtx.beginPath(); bCtx.arc(ball.x, drawY, drawRad, 0, Math.PI*2); bCtx.fill();
+            
+            // Red Seams (only visible when ball is close/large)
+            if (drawRad > 3) {
+                bCtx.strokeStyle = '#ef4444'; bCtx.lineWidth = 1;
+                bCtx.beginPath(); bCtx.arc(ball.x - drawRad/2, drawY, drawRad/2, -Math.PI/3, Math.PI/3); bCtx.stroke();
+                bCtx.beginPath(); bCtx.arc(ball.x + drawRad/2, drawY, drawRad/2, Math.PI*2/3, Math.PI*4/3); bCtx.stroke();
+            }
+        }
+        
+        // 12. Hit Animation Starburst
+        if (hitAnimation > 0) {
+            bCtx.fillStyle = '#fef08a';
+            bCtx.beginPath(); bCtx.arc(150, 250, hitAnimation * 4, 0, Math.PI*2); bCtx.fill();
+        }
+
+        // 13. UI Overlays (Status Text)
+        if (bStatusText) {
+            bCtx.fillStyle = '#0f172a'; // Shadow
+            bCtx.font = '900 28px Inter, sans-serif';
+            bCtx.textAlign = 'center';
+            bCtx.fillText(bStatusText, 152, 142); 
+            
+            bCtx.fillStyle = bStatusText.includes('STRIKE') || bStatusText.includes('OUT') ? '#ef4444' : '#fde047';
+            bCtx.fillText(bStatusText, 150, 140);
+            
+            if (bStatusSub) {
+                bCtx.fillStyle = '#ffffff';
+                bCtx.font = 'bold 14px Inter, sans-serif';
+                bCtx.fillText(bStatusSub, 150, 165);
+            }
+        }
+        
+        // HUD
+        bCtx.fillStyle = 'rgba(0,0,0,0.6)';
+        bCtx.fillRect(10, 10, 100, 45);
+        bCtx.fillStyle = '#ef4444';
+        bCtx.textAlign = 'left';
+        bCtx.font = 'bold 12px Inter, sans-serif';
+        bCtx.fillText(`STRIKES: ${bStrikes} / 3`, 15, 27);
+        bCtx.fillText(`OUTS: ${bOuts} / 3`, 15, 45);
+
+        // Base Map HUD
+        bCtx.fillStyle = 'rgba(0,0,0,0.6)';
+        bCtx.fillRect(10, 60, 40, 40);
+        const dX = 30, dY = 88, dSize = 10;
+        bCtx.strokeStyle = '#64748b'; bCtx.lineWidth = 1.5;
+        bCtx.beginPath(); bCtx.moveTo(dX, dY); bCtx.lineTo(dX+dSize, dY-dSize); bCtx.lineTo(dX, dY-dSize*2); bCtx.lineTo(dX-dSize, dY-dSize); bCtx.closePath(); bCtx.stroke();
+        
+        if (runnersOnBase[0]) { bCtx.fillStyle = '#fde047'; bCtx.beginPath(); bCtx.arc(dX+dSize, dY-dSize, 3, 0, Math.PI*2); bCtx.fill(); }
+        if (runnersOnBase[1]) { bCtx.fillStyle = '#fde047'; bCtx.beginPath(); bCtx.arc(dX, dY-dSize*2, 3, 0, Math.PI*2); bCtx.fill(); }
+        if (runnersOnBase[2]) { bCtx.fillStyle = '#fde047'; bCtx.beginPath(); bCtx.arc(dX-dSize, dY-dSize, 3, 0, Math.PI*2); bCtx.fill(); }
+
+        bCtx.fillStyle = 'rgba(0,0,0,0.6)';
+        bCtx.fillRect(145, 10, 145, 25);
+        bCtx.fillStyle = '#60a5fa';
+        bCtx.textAlign = 'right';
+        bCtx.font = 'bold 10px Inter, sans-serif';
+        bCtx.fillText(`UP: ${currentBatterName}`, 280, 27);
+    }
+
+    function gameOverBaseball() {
+        clearInterval(baseballInterval);
+        score = bScore; 
+        
+        const bCtx = document.getElementById('baseballCanvas').getContext('2d');
+        bCtx.fillStyle = 'rgba(15, 23, 42, 0.85)';
+        bCtx.fillRect(0, 0, 300, 300);
+        bCtx.fillStyle = '#ffffff';
+        bCtx.font = 'bold 16px Inter, sans-serif';
+        bCtx.textAlign = 'center';
+        bCtx.fillText('GAME OVER', 150, 135);
+        bCtx.font = '12px Inter, sans-serif';
+        bCtx.fillStyle = '#94a3b8';
+        bCtx.fillText(`Final Score: ${score}`, 150, 160);
+
+        const lowestTop10Score = globalLeaderboard.length >= 10 ? globalLeaderboard[9].score : 0;
+        if (score > lowestTop10Score && score > 0) {
+            document.getElementById('nameEntryUI').classList.remove('hidden');
+            document.getElementById('playerName').focus();
+        }
+    }
+
+    window.submitScore = async function() {
+        if (!user) {
+            alert("Database connection not ready. Try again.");
+            return;
+        }
+        
+        const nameInput = document.getElementById('playerName');
+        const submitBtn = nameInput.nextElementSibling;
+        let name = nameInput.value.trim().toUpperCase() || "ANONYMOUS";
+        
+        nameInput.disabled = true;
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+        
+        try {
+            const scoresRef = collection(db, 'artifacts', appId, 'public', 'data', 'snakeLeaderboard');
+            await addDoc(scoresRef, {
+                name: name,
+                score: score,
+                timestamp: Date.now()
+            });
+            
+            document.getElementById('nameEntryUI').classList.add('hidden');
+        } catch (error) {
+            console.error("Error saving to Firebase:", error);
+            alert("Could not save score to global database.");
+        } finally {
+            nameInput.value = '';
+            nameInput.disabled = false;
+            submitBtn.disabled = false;
+            submitBtn.innerText = 'Save';
+        }
+    }
+  </script>
+</body>
+</html>
